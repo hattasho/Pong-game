@@ -1,137 +1,66 @@
 const canvas = document.getElementById('pongCanvas');
 const ctx = canvas.getContext('2d');
 
-// Configurações do jogo
-const paddleWidth = 10;
-const paddleHeight = 100;
-const ballSize = 10;
-const paddleSpeed = 5;
-const ballSpeed = 4;
+// Configurações gerais
+const paddleWidth = 10, paddleHeight = 100, ballSize = 10, speed = 5;
+let isDragging = false, currentMouseY = 0;
 
-// Paletas
-const playerPaddle = {
-    x: 0,
-    y: canvas.height / 2 - paddleHeight / 2,
-    width: paddleWidth,
-    height: paddleHeight,
-    color: 'white'
-};
+// Objetos
+const playerPaddle = { x: 0, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight, color: 'white' };
+const aiPaddle = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight, color: 'white' };
+const ball = { x: canvas.width / 2, y: canvas.height / 2, radius: ballSize / 2, dx: speed, dy: speed, color: 'white' };
 
-const aiPaddle = {
-    x: canvas.width - paddleWidth,
-    y: canvas.height / 2 - paddleHeight / 2,
-    width: paddleWidth,
-    height: paddleHeight,
-    color: 'white'
-};
-
-// Bola
-const ball = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    radius: ballSize / 2,
-    dx: ballSpeed,
-    dy: ballSpeed,
-    color: 'white'
-};
-
-// Desenho da paleta
-function drawPaddle(paddle) {
-    ctx.fillStyle = paddle.color;
-    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-}
-
-// Desenho da bola
-function drawBall() {
-    ctx.fillStyle = ball.color;
+// Desenhar objetos
+function draw(obj) {
+    ctx.fillStyle = obj.color;
     ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    obj.radius ? ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2) : ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
     ctx.fill();
 }
 
-// Atualização da posição da bola
-function updateBall() {
-    ball.x += ball.dx;
-    ball.y += ball.dy;
+// Atualizações
+function update() {
+    ball.x += ball.dx; ball.y += ball.dy;
 
-    // Colisão com o topo e a base
-    if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
-        ball.dy *= -1;
-    }
+    // Colisão com a parede
+    if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) ball.dy *= -1;
 
-    // Colisão com as paletas
-    if (
-        (ball.x - ball.radius < playerPaddle.x + playerPaddle.width &&
-        ball.y > playerPaddle.y &&
-        ball.y < playerPaddle.y + playerPaddle.height) ||
-        (ball.x + ball.radius > aiPaddle.x &&
-        ball.y > aiPaddle.y &&
-        ball.y < aiPaddle.y + aiPaddle.height)
-    ) {
+    // Colisão com paletas
+    if ((ball.x - ball.radius < playerPaddle.x + playerPaddle.width && ball.y > playerPaddle.y && ball.y < playerPaddle.y + playerPaddle.height) || 
+        (ball.x + ball.radius > aiPaddle.x && ball.y > aiPaddle.y && ball.y < aiPaddle.y + aiPaddle.height)) {
         ball.dx *= -1;
     }
 
-    // Resetar bola quando sair da tela
+    // Resetar bola se sair da tela
     if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
-        ball.x = canvas.width / 2;
-        ball.y = canvas.height / 2;
-        ball.dx *= -1;
+        ball.x = canvas.width / 2; ball.y = canvas.height / 2; ball.dx *= -1;
     }
-}
 
-// Atualização da posição das paletas
-function updatePaddles() {
-    // Controle do jogador com drag and drop
-    if (isDragging) {
-        const mouseY = currentMouseY - canvas.getBoundingClientRect().top;
-        playerPaddle.y = Math.max(Math.min(mouseY - paddleHeight / 2, canvas.height - paddleHeight), 0);
-    }
+    // Movimento da paleta do jogador
+    if (isDragging) playerPaddle.y = Math.max(Math.min(currentMouseY - paddleHeight / 2, canvas.height - paddleHeight), 0);
 
     // Movimento da paleta do AI
-    if (ball.y > aiPaddle.y + aiPaddle.height / 2) {
-        aiPaddle.y = Math.min(aiPaddle.y + paddleSpeed, canvas.height - paddleHeight);
-    } else {
-        aiPaddle.y = Math.max(aiPaddle.y - paddleSpeed, 0);
-    }
+    aiPaddle.y = Math.max(Math.min(ball.y - aiPaddle.height / 2, canvas.height - paddleHeight), 0);
 }
 
-// Eventos de drag and drop
-let isDragging = false;
-let currentMouseY = 0;
-
+// Eventos de arrastar
 canvas.addEventListener('mousedown', (e) => {
-    const mouseX = e.clientX - canvas.getBoundingClientRect().left;
-    const mouseY = e.clientY - canvas.getBoundingClientRect().top;
-    
-    if (mouseX < playerPaddle.x + playerPaddle.width && mouseY > playerPaddle.y && mouseY < playerPaddle.y + playerPaddle.height) {
+    const rect = canvas.getBoundingClientRect();
+    if (e.clientX - rect.left < playerPaddle.x + playerPaddle.width && e.clientY - rect.top > playerPaddle.y && e.clientY - rect.top < playerPaddle.y + playerPaddle.height) {
         isDragging = true;
-        currentMouseY = mouseY;  // Atualiza a posição atual do mouse
+        currentMouseY = e.clientY - rect.top;
     }
 });
 
-canvas.addEventListener('mouseup', () => {
-    isDragging = false;
-});
+canvas.addEventListener('mouseup', () => isDragging = false);
+canvas.addEventListener('mousemove', (e) => isDragging && (currentMouseY = e.clientY - canvas.getBoundingClientRect().top));
 
-canvas.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-        currentMouseY = e.clientY;
-    }
-});
-
-// Função principal do jogo
+// Loop do jogo
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    drawPaddle(playerPaddle);
-    drawPaddle(aiPaddle);
-    drawBall();
-
-    updateBall();
-    updatePaddles();
-
+    draw(playerPaddle); draw(aiPaddle); draw(ball);
+    update();
     requestAnimationFrame(gameLoop);
 }
 
-// Iniciar o jogo
 gameLoop();
