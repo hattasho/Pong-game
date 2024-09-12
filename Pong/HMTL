@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Define o conjunto de caracteres da página como UTF-8 -->
     <meta charset="UTF-8">
+    
+    <!-- Define a visualização para ser responsiva, ajustando-se ao dispositivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Título da página que aparecerá na aba do navegador -->
     <title>Pong</title>
+
+    <!-- Estilos CSS -->
     <style>
+        /* Aplica estilo ao elemento <canvas> */
         canvas {
-            background: black;
-            display: block;
-            margin: 0 auto;
+            background: black;  /* Define o fundo do canvas como preto, semelhante ao visual clássico do Pong */
+            display: block;      /* Remove a exibição inline do canvas e o trata como um bloco */
+            margin: 0 auto;      /* Centraliza o canvas horizontalmente na página */
         }
     </style>
 </head>
 <body>
+    <!-- Elemento <canvas> onde o jogo será desenhado. O ID será usado para acessar o canvas com JavaScript -->
     <canvas id="pongCanvas" width="800" height="400"></canvas>
+
+    <!-- Link para um arquivo JavaScript externo chamado "pong.js", onde a lógica do jogo estará implementada -->
     <script src="pong.js"></script>
 </body>
 </html>
