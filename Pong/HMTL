@@ -14,9 +14,9 @@
     <style>
         /* Aplica estilo ao elemento <canvas> */
         canvas {
-            background: black;  /* Define o fundo do canvas como preto, semelhante ao visual clássico do Pong */
-            display: block;      /* Remove a exibição inline do canvas e o trata como um bloco */
-            margin: 0 auto;      /* Centraliza o canvas horizontalmente na página */
+            background: black;  
+            display: block;
+            margin: 0 auto;
         }
     </style>
 </head>
