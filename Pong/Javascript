@@ -1,4 +1,4 @@
-// Obtém o elemento <canvas> do HTML e seu contexto de desenho 2D
+// recebe o elemento canvas do HTML e seu contexto de desenho 2D
 const canvas = document.getElementById('pongCanvas');
 const ctx = canvas.getContext('2d');
 
