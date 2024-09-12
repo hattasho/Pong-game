@@ -1,66 +1,124 @@
+// Obtém o elemento <canvas> do HTML e seu contexto de desenho 2D
 const canvas = document.getElementById('pongCanvas');
 const ctx = canvas.getContext('2d');
 
-// Configurações gerais
+// Configurações gerais do jogo
 const paddleWidth = 10, paddleHeight = 100, ballSize = 10, speed = 5;
-let isDragging = false, currentMouseY = 0;
+let isDragging = false, currentMouseY = 0;  // Variáveis para controle da interação do mouse
 
-// Objetos
-const playerPaddle = { x: 0, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight, color: 'white' };
-const aiPaddle = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight, color: 'white' };
-const ball = { x: canvas.width / 2, y: canvas.height / 2, radius: ballSize / 2, dx: speed, dy: speed, color: 'white' };
+// Definição dos objetos do jogo: a paleta do jogador, a paleta do AI e a bola
+const playerPaddle = { 
+    x: 0, // A paleta do jogador fica na borda esquerda
+    y: canvas.height / 2 - paddleHeight / 2, // Verticalmente centralizada
+    width: paddleWidth, 
+    height: paddleHeight, 
+    color: 'white' // Cor branca
+};
 
-// Desenhar objetos
+const aiPaddle = { 
+    x: canvas.width - paddleWidth, // A paleta do AI fica na borda direita
+    y: canvas.height / 2 - paddleHeight / 2, // Verticalmente centralizada
+    width: paddleWidth, 
+    height: paddleHeight, 
+    color: 'white' // Cor branca
+};
+
+const ball = { 
+    x: canvas.width / 2, // Inicia no centro da tela
+    y: canvas.height / 2, // Inicia no centro da tela
+    radius: ballSize / 2, // Raio da bola
+    dx: speed, // Velocidade da bola no eixo X
+    dy: speed, // Velocidade da bola no eixo Y
+    color: 'white' // Cor branca
+};
+
+// Função para desenhar objetos (paletas e bola) na tela
 function draw(obj) {
-    ctx.fillStyle = obj.color;
-    ctx.beginPath();
-    obj.radius ? ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2) : ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
-    ctx.fill();
+    ctx.fillStyle = obj.color; // Define a cor de preenchimento do objeto
+
+    // Se o objeto for a bola, desenha um círculo
+    if (obj.radius) {
+        ctx.beginPath();
+        ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2); // Desenha a bola
+    } 
+    // Caso contrário, desenha um retângulo (as paletas)
+    else {
+        ctx.fillRect(obj.x, obj.y, obj.width, obj.height); // Desenha as paletas
+    }
+
+    ctx.fill(); // Preenche o objeto com a cor especificada
 }
 
-// Atualizações
+// Função de atualização do estado do jogo
 function update() {
-    ball.x += ball.dx; ball.y += ball.dy;
+    // Movimenta a bola com base na velocidade (dx, dy)
+    ball.x += ball.dx; 
+    ball.y += ball.dy;
 
-    // Colisão com a parede
-    if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) ball.dy *= -1;
+    // Verifica colisão da bola com a parede superior ou inferior
+    if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+        ball.dy *= -1; // Inverte a direção vertical da bola
+    }
 
-    // Colisão com paletas
+    // Verifica colisão da bola com a paleta do jogador ou do AI
     if ((ball.x - ball.radius < playerPaddle.x + playerPaddle.width && ball.y > playerPaddle.y && ball.y < playerPaddle.y + playerPaddle.height) || 
         (ball.x + ball.radius > aiPaddle.x && ball.y > aiPaddle.y && ball.y < aiPaddle.y + aiPaddle.height)) {
-        ball.dx *= -1;
+        ball.dx *= -1; // Inverte a direção horizontal da bola
     }
 
-    // Resetar bola se sair da tela
+    // Se a bola passar das bordas laterais, reinicia no centro
     if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
-        ball.x = canvas.width / 2; ball.y = canvas.height / 2; ball.dx *= -1;
+        ball.x = canvas.width / 2; // Reseta a posição horizontal
+        ball.y = canvas.height / 2; // Reseta a posição vertical
+        ball.dx *= -1; // Inverte a direção horizontal
     }
 
-    // Movimento da paleta do jogador
-    if (isDragging) playerPaddle.y = Math.max(Math.min(currentMouseY - paddleHeight / 2, canvas.height - paddleHeight), 0);
+    // Movimenta a paleta do jogador com base no mouse, mantendo dentro dos limites do canvas
+    if (isDragging) {
+        playerPaddle.y = Math.max(Math.min(currentMouseY - paddleHeight / 2, canvas.height - paddleHeight), 0);
+    }
 
-    // Movimento da paleta do AI
+    // Movimenta a paleta do AI de forma simples, acompanhando a posição vertical da bola
     aiPaddle.y = Math.max(Math.min(ball.y - aiPaddle.height / 2, canvas.height - paddleHeight), 0);
 }
 
-// Eventos de arrastar
+// Eventos de arrastar para mover a paleta do jogador com o mouse
 canvas.addEventListener('mousedown', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    if (e.clientX - rect.left < playerPaddle.x + playerPaddle.width && e.clientY - rect.top > playerPaddle.y && e.clientY - rect.top < playerPaddle.y + playerPaddle.height) {
-        isDragging = true;
-        currentMouseY = e.clientY - rect.top;
+    const rect = canvas.getBoundingClientRect(); // Obtém a posição do canvas na página
+
+    // Verifica se o clique foi na área da paleta do jogador
+    if (e.clientX - rect.left < playerPaddle.x + playerPaddle.width && 
+        e.clientY - rect.top > playerPaddle.y && 
+        e.clientY - rect.top < playerPaddle.y + playerPaddle.height) {
+        isDragging = true; // Ativa o modo de arrastar
+        currentMouseY = e.clientY - rect.top; // Atualiza a posição vertical do mouse
     }
 });
 
+// Evento para parar de arrastar quando o botão do mouse é liberado
 canvas.addEventListener('mouseup', () => isDragging = false);
-canvas.addEventListener('mousemove', (e) => isDragging && (currentMouseY = e.clientY - canvas.getBoundingClientRect().top));
 
-// Loop do jogo
+// Evento para atualizar a posição vertical do mouse enquanto se arrasta
+canvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+        currentMouseY = e.clientY - canvas.getBoundingClientRect().top; // Atualiza a posição do mouse
+    }
+});
+
+// Função principal do jogo que roda em loop
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    draw(playerPaddle); draw(aiPaddle); draw(ball);
-    update();
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas para redesenhar
+
+    // Desenha a paleta do jogador, a paleta do AI e a bola
+    draw(playerPaddle); 
+    draw(aiPaddle); 
+    draw(ball);
+
+    update(); // Atualiza o estado do jogo
+
+    // Chama o gameLoop de forma contínua (taxa de frames)
     requestAnimationFrame(gameLoop);
 }
 
+// Inicia o loop do jogo
 gameLoop();
