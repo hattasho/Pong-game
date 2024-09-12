@@ -6,37 +6,36 @@ const ctx = canvas.getContext('2d');
 const paddleWidth = 10, paddleHeight = 100, ballSize = 10, speed = 5;
 let isDragging = false, currentMouseY = 0;  // Variáveis para controle da interação do mouse
 
-// Definição dos objetos do jogo: a paleta do jogador, a paleta do AI e a bola
+// definindo os objetos do jogo (a paleta do jogador, a paleta do AI e a bola)
 const playerPaddle = { 
-    x: 0, // A paleta do jogador fica na borda esquerda
+    x:0, // A paleta do jogador fica na borda esquerda
     y: canvas.height / 2 - paddleHeight / 2, // Verticalmente centralizada
     width: paddleWidth, 
     height: paddleHeight, 
-    color: 'white' // Cor branca
+    color: 'white' // cor branca para a paleta
 };
 
 const aiPaddle = { 
-    x: canvas.width - paddleWidth, // A paleta do AI fica na borda direita
+    x: canvas.width - paddleWidth, // a paleta da AI fica na borda direita
     y: canvas.height / 2 - paddleHeight / 2, // Verticalmente centralizada
     width: paddleWidth, 
-    height: paddleHeight, 
+    height: paddleHeight,
     color: 'white' // Cor branca
 };
 
 const ball = { 
-    x: canvas.width / 2, // Inicia no centro da tela
-    y: canvas.height / 2, // Inicia no centro da tela
+    x: canvas.width / 2, // inicia no centro da tela
+    y: canvas.height / 2, // ^
     radius: ballSize / 2, // Raio da bola
     dx: speed, // Velocidade da bola no eixo X
     dy: speed, // Velocidade da bola no eixo Y
-    color: 'white' // Cor branca
+    color: 'white' // cor da bola: branca
 };
 
-// Função para desenhar objetos (paletas e bola) na tela
+// função para desenhar objetos (paletas e bola) na tela
 function draw(obj) {
-    ctx.fillStyle = obj.color; // Define a cor de preenchimento do objeto
-
-    // Se o objeto for a bola, desenha um círculo
+    ctx.fillStyle = obj.color; 
+    // se objeto tiver "rádio"
     if (obj.radius) {
         ctx.beginPath();
         ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2); // Desenha a bola
@@ -73,7 +72,7 @@ function update() {
         ball.dx *= -1; // Inverte a direção horizontal
     }
 
-    // Movimenta a paleta do jogador com base no mouse, mantendo dentro dos limites do canvas
+    // movimenta a paleta do jogador com base no mouse, mantendo dentro dos limites do canvas
     if (isDragging) {
         playerPaddle.y = Math.max(Math.min(currentMouseY - paddleHeight / 2, canvas.height - paddleHeight), 0);
     }
@@ -109,16 +108,16 @@ canvas.addEventListener('mousemove', (e) => {
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas para redesenhar
 
-    // Desenha a paleta do jogador, a paleta do AI e a bola
+    // executa os desenhos das paleta e das bolas
     draw(playerPaddle); 
     draw(aiPaddle); 
     draw(ball);
 
-    update(); // Atualiza o estado do jogo
+    update(); // atualiza o jogo
 
-    // Chama o gameLoop de forma contínua (taxa de frames)
+    // chama o gameLoop
     requestAnimationFrame(gameLoop);
 }
 
-// Inicia o loop do jogo
+//reinicia o jogo
 gameLoop();
